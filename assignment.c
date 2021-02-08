@@ -30,7 +30,7 @@ static gboolean keyboardHandler(GIOChannel *source, GIOCondition cond, Container
     return TRUE;
 
   switch (g_ascii_tolower(str[0])) {
-    case 'x': {
+    case 'x': { // change layout
       if (data->layout == 1) {
         g_object_set(data->sink_0, "xpos", 320, "ypos", 0, NULL);
         g_object_set(data->sink_1, "xpos", 320, "ypos", 240, NULL);
@@ -53,7 +53,7 @@ static gboolean keyboardHandler(GIOChannel *source, GIOCondition cond, Container
         data->layout = 1;
       break;
     }
-    case 'q':
+    case 'q': // quit
       g_main_loop_quit(data->loop);
       break;
     default:
@@ -64,6 +64,7 @@ static gboolean keyboardHandler(GIOChannel *source, GIOCondition cond, Container
   return TRUE;
 }
 
+// memcpy is faster than strcat by a lot, just don't screw up your maths.
 char *fastconcat(const char *string1, const char *string2) {
   const size_t len1 = strlen(string1);
   const size_t len2 = strlen(string2);
@@ -77,6 +78,7 @@ int main (int argc, char *argv[]) {
   ContainerData data;
   GstStateChangeReturn ret;
   GIOChannel *io_stdin;
+  // I'm using a funky 960x540 resolution to save my VM some headaches in rendering.
   gchar *pipelineCommandTemplate =
       "videomixer name=mix sink_0::xpos=0 sink_1::xpos=320 sink_2::xpos=160 sink_2::ypos=240 background=black ! videoscale ! video/x-raw,width=960,height=540 ! tee name=t "
       "filesrc name=file1 location=./sample.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=320,height=240 ! mix.sink_0 "
@@ -119,14 +121,14 @@ int main (int argc, char *argv[]) {
   ingest = fastconcat(ingestServers[i].name, argv[2]);
   pipelineCommand = fastconcat(pipelineCommandTemplate, ingest);
 
-  g_print("%s\r\n", pipelineCommand);
-
   memset(&data, 0, sizeof(data));
   data.layout = 1;
 
   g_print("Use: type your option in the console and press enter:\r\n"
       " 'X' - change video layout\r\n"
       " 'Q' - quit program\r\n");
+
+  // builds the pipeline
   data.pipeline = gst_parse_launch(pipelineCommand, NULL);
 
 #ifdef G_OS_WIN32
@@ -136,10 +138,12 @@ int main (int argc, char *argv[]) {
 #endif
   g_io_add_watch(io_stdin, G_IO_IN, (GIOFunc) keyboardHandler, &data);
 
+  // attach to the pipeline bus and intercept messages
   data.bus = gst_element_get_bus(data.pipeline);
   gst_bus_add_signal_watch(data.bus);
   g_signal_connect(data.bus, "message", G_CALLBACK(busMessageCallback), &data);
 
+  // This actually starts pushing video out
   ret = gst_element_set_state(data.pipeline, GST_STATE_PLAYING);
   if (ret == GST_STATE_CHANGE_FAILURE) {
     g_printerr("Could not set pipeline to playing state.\r\n");
@@ -151,6 +155,7 @@ int main (int argc, char *argv[]) {
 
   data.playing = TRUE;
 
+  // Grab the videoMixer and all the sink_'s we need to manipulate later
   data.videoMixer = gst_bin_get_by_name(GST_BIN(data.pipeline), "mix");
   data.sink_0 = gst_element_get_static_pad(data.videoMixer, "sink_0");
   data.sink_1 = gst_element_get_static_pad(data.videoMixer, "sink_1");
