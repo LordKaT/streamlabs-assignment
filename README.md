@@ -10,7 +10,7 @@ Where <ingest option> is one of the following:
 
 To enter command swhile streaming type in the letter followed by enter in the console.
 
-**Comments**
+**Comments**\
 Thank you for the opportunity to take on this interesting challenge. I have\
 spent the majority of my 8 hours researching as C and gstreamer API are\
 outside my experience. Given that, I'm happy with how this turned out. There\
