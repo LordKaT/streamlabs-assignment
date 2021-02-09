@@ -8,7 +8,8 @@ Run: ./assignment <ingest option> <twitch stream id>\
   2 - Dallas Ingest\
   3 - Portland Ingest\
 
-To enter command swhile streaming type in the letter followed by enter in the console.
+To enter commands while streaming type in the letter of the command followed by enter\
+in the console.
 
 **Comments**\
 Thank you for the opportunity to take on this interesting challenge. I have\
