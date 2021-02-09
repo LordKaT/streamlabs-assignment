@@ -2,8 +2,8 @@ Reqs: gcc, gstreamer-1.0, associated dev libs
 
 Compile: gcc assignment.c -o assignment $(pkg-config --cflags --libs gstreamer-1.0)
 
-Run: ./assignment <ingest option> <twitch stream id>\
- Where <ingest option> is one of the following:\
+Run: ./assignment ingest twitch-stream-id\
+ Where ingest is one of the following:\
   1 - NY Ingest\
   2 - Dallas Ingest\
   3 - Portland Ingest\
